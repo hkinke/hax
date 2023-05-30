@@ -4,7 +4,7 @@ data UFunction = Cos | Sin | Tan | Cot | Exp | Minus | Sigmoid | Identity derivi
 data BFunction = Add | Mul | Sub | Div deriving (Show)
 -- data Loop = FOR
 -- add parameter to graph to input and return type like bool, double, int, or matrix
-data Graph=NodeB BFunction Graph Graph | NodeU UFunction Graph | NodeT UFunction | NodeC Double| If Graph Graph Graph deriving (Show)
+data Graph=NodeB BFunction Graph Graph | NodeU UFunction Graph | NodeT UFunction | NodeC Double| NodeIf Graph Graph Graph deriving (Show)
 
 sigmoid:: Double -> Double
 sigmoid x= 1.0/(1+exp(-x))
@@ -33,7 +33,7 @@ gradient (NodeT f)     = case f of
                            Minus -> NodeT Minus
                            Identity -> NodeC 1.0
 gradient (NodeC _ )    = NodeC 0.0
-gradient (If c h g)    = If c (gradient h) (gradient g)
+gradient (NodeIf c h g)    = NodeIf c (gradient h) (gradient g)
 
 
                      
@@ -59,7 +59,7 @@ evaluate (NodeT f) x     = case f of
                              Minus -> -x
                              Identity -> x
 evaluate (NodeC y) _     = y
-evaluate (If c g h) x    = if (evaluate c x) > 0.0
+evaluate (NodeIf c g h) x    = if (evaluate c x) > 0.0
                              then evaluate g x
                              else evaluate h x
                      
@@ -84,7 +84,7 @@ tofunction (NodeT f)     = case f of
                              Minus -> (\x -> -x)
                              Identity -> (\x -> x)
 tofunction (NodeC y)     = \_ -> y
-tofunction (If c g h) = \x -> if (tofunction c x) > 0.0
+tofunction (NodeIf c g h) = \x -> if (tofunction c x) > 0.0
                                  then tofunction g x
                                  else tofunction h x
                                  
@@ -97,8 +97,8 @@ tofunction (If c g h) = \x -> if (tofunction c x) > 0.0
 gsin g= NodeU Sin g
 gcos g= NodeU Cos g
 gid = NodeT Identity
-gmax g h=If (NodeB Sub g h) g h
-gmin g h=If (NodeB Sub g h) h g
+gmax g h=NodeIf (NodeB Sub g h) g h
+gmin g h=NodeIf (NodeB Sub g h) h g
 gconstant x=NodeC x
 gsigmoid g=NodeU Sigmoid g
 gsigmoid2 g =NodeB Div (NodeC 1.0) (NodeB Add (NodeC 1.0) (NodeU Exp (NodeU Minus g)))
