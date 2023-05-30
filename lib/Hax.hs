@@ -1,4 +1,6 @@
-module Hax where
+module Hax(UFunction(..),BFunction(..),Graph(..),gradient,
+           evaluate,tofunction,(|+|),(|-|),(|*|),(|/|),
+           gsin,gcos,gid,gmax,gmin,gconstant,gsigmoid) where
 
 data UFunction = Cos | Sin | Tan | Cot | Exp | Minus | Sigmoid | Identity deriving (Show)
 data BFunction = Add | Mul | Sub | Div deriving (Show)
